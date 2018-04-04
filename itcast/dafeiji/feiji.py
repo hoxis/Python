@@ -45,6 +45,20 @@ class Bullet(object):
     def move(self):
         self.y -= 5
 
+    def isInScreen(self):
+        if self.y < 0 or self.x < 0:
+            return False
+        else:
+            return True
+
+class EnemyPlane(object):
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.image = pygame.image.load("./feiji/enemy-1.gif").convert()
+
+    def display(self, screen):
+        screen.blit(self.image, (self.x, self.y))
 
 def key_process(hero):
     # 判断是否是点击了退出按钮
@@ -82,6 +96,9 @@ if __name__ == "__main__":
     # 创建飞机
     hero = HeroPlane()
 
+    # 创建敌机
+    enemy = EnemyPlane()
+
     # 把背景图放在窗口显示
     while True:
         screen.blit(background, (0, 0))
@@ -89,8 +106,18 @@ if __name__ == "__main__":
         # 显示飞机
         hero.display(screen)
 
-        # 显示子弹
+        enemy.display(screen)
+
+        # 存储最终要显示的子弹
+        finalBullets = []
+
+        # 判断子弹是否出界
         for bullet in hero.bullets:
+            if bullet.isInScreen():
+                finalBullets.append(bullet)
+
+        # 显示子弹
+        for bullet in finalBullets:
             bullet.display(screen)
             bullet.move()
 
