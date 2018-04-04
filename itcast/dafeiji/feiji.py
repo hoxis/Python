@@ -11,6 +11,9 @@ class HeroPlane(object):
         self.y = 300
         self.image = pygame.image.load("./feiji/hero.gif").convert()
 
+        # 用来存储英雄飞机发射的所有子弹
+        self.bullets = []
+
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
@@ -22,9 +25,26 @@ class HeroPlane(object):
 
     def move_up(self):
         self.y -= 5
-        
+
     def move_down(self):
         self.y += 5
+    
+    def add_bullet(self):
+        bullet = Bullet(hero.x+5, hero.y+20)
+        self.bullets.append(bullet)
+
+class Bullet(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.image = pygame.image.load("./feiji/bullet-3.gif").convert()
+
+    def display(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
+    def move(self):
+        self.y -= 5
+
 
 def key_process(hero):
     # 判断是否是点击了退出按钮
@@ -50,21 +70,29 @@ def key_process(hero):
                 hero.move_down()
             elif event.key == K_SPACE:
                 print('space')
+                hero.add_bullet()
 
 if __name__ == "__main__":
-    # 1. 创建一个窗口，用来显示内容
+    # 创建一个窗口，用来显示内容
     screen = pygame.display.set_mode((320, 480), 0, 32)
 
-    # 2. 创建一个和窗口大小一样的图片，当做背景
+    # 创建一个和窗口大小一样的图片，当做背景
     background = pygame.image.load("./feiji/background.png").convert()
 
-    # 3. 创建飞机图片
+    # 创建飞机
     hero = HeroPlane()
 
-    # 3. 把背景图放在窗口显示
+    # 把背景图放在窗口显示
     while True:
         screen.blit(background, (0, 0))
+
+        # 显示飞机
         hero.display(screen)
+
+        # 显示子弹
+        for bullet in hero.bullets:
+            bullet.display(screen)
+            bullet.move()
 
         key_process(hero)
         
