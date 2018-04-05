@@ -1,6 +1,7 @@
 # coding=utf-8
 import pygame
 import time
+import random
 from pygame.locals import *
 
 step = 5
@@ -12,7 +13,7 @@ class HeroPlane(object):
         self.y = 350
         self.image = pygame.image.load("./feiji/hero.gif").convert()
 
-        # 用来存储英雄飞机发射的所有子弹
+        # 用来存储飞机发射的所有子弹
         self.bullets = []
 
     def display(self, screen):
@@ -24,6 +25,11 @@ class HeroPlane(object):
             if bullet.isInScreen():
                 finalBullets.append(bullet)
         self.bullets = finalBullets
+
+        # 显示子弹
+        for bullet in self.bullets:
+            bullet.display(screen)
+            bullet.move()
 
     def move_left(self):
         self.x -= step
@@ -38,24 +44,29 @@ class HeroPlane(object):
         self.y += step
 
     def add_bullet(self):
-        bullet = Bullet(hero.x+5, hero.y+20)
+        bullet = Bullet(self.x+43.5, self.y+20, "./feiji/bullet-3.gif", "up")
         self.bullets.append(bullet)
 
 
 class Bullet(object):
-    def __init__(self, x, y):
+    def __init__(self, x, y, imageName, direction):
         self.x = x
         self.y = y
-        self.image = pygame.image.load("./feiji/bullet-3.gif").convert()
+        self.direction = direction
+        self.imageName = imageName
+        self.image = pygame.image.load(imageName).convert()
 
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
     def move(self):
-        self.y -= step*2
+        if self.direction == "up":
+            self.y -= step*2
+        elif self.direction == "down":
+            self.y += step*2
 
     def isInScreen(self):
-        if self.y < 0 or self.x < 0:
+        if self.y < 0 or self.x < 0 or self.y > 480 or self.x > 320:
             return False
         else:
             return True
@@ -69,8 +80,23 @@ class EnemyPlane(object):
         self.direction = "right"
         self.image = pygame.image.load("./feiji/enemy-1.gif").convert()
 
+        # 用来存储飞机发射的所有子弹
+        self.bullets = []
+
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
+        # 存储最终要显示的子弹
+        finalBullets = []
+        # 判断子弹是否越界，越界的进行剔除
+        for bullet in self.bullets:
+            if bullet.isInScreen():
+                finalBullets.append(bullet)
+        self.bullets = finalBullets
+
+        # 显示子弹
+        for bullet in self.bullets:
+            bullet.display(screen)
+            bullet.move()
 
     def move(self):
         if self.x >= 320 - 50:
@@ -82,6 +108,13 @@ class EnemyPlane(object):
             self.x -= step
         else:
             self.x += step
+
+    def add_bullet(self):
+        num = random.randint(1, 100)
+        if num == 88:
+            bullet = Bullet(self.x+10, self.y+10,
+                            "./feiji/bullet-1.gif", "down")
+            self.bullets.append(bullet)
 
 
 def key_process(hero):
@@ -133,13 +166,11 @@ if __name__ == "__main__":
 
         enemy.display(screen)
         enemy.move()
-
-        # 显示子弹
-        for bullet in hero.bullets:
-            bullet.display(screen)
-            bullet.move()
+        enemy.add_bullet()
 
         key_process(hero)
 
         pygame.display.update()
+
+        # 通过延时的方式，来降低这个while循环的循环速度，从而降低了cpu占用率
         time.sleep(0.1)
