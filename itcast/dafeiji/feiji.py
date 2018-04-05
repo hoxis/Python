@@ -5,10 +5,11 @@ from pygame.locals import *
 
 step = 5
 
+
 class HeroPlane(object):
     def __init__(self):
         self.x = 100
-        self.y = 300
+        self.y = 350
         self.image = pygame.image.load("./feiji/hero.gif").convert()
 
         # 用来存储英雄飞机发射的所有子弹
@@ -16,22 +17,30 @@ class HeroPlane(object):
 
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
+        # 存储最终要显示的子弹
+        finalBullets = []
+        # 判断子弹是否越界，越界的进行剔除
+        for bullet in self.bullets:
+            if bullet.isInScreen():
+                finalBullets.append(bullet)
+        self.bullets = finalBullets
 
     def move_left(self):
-        self.x -= 5
+        self.x -= step
 
     def move_right(self):
-        self.x += 5
+        self.x += step
 
     def move_up(self):
-        self.y -= 5
+        self.y -= step
 
     def move_down(self):
-        self.y += 5
-    
+        self.y += step
+
     def add_bullet(self):
         bullet = Bullet(hero.x+5, hero.y+20)
         self.bullets.append(bullet)
+
 
 class Bullet(object):
     def __init__(self, x, y):
@@ -43,7 +52,7 @@ class Bullet(object):
         screen.blit(self.image, (self.x, self.y))
 
     def move(self):
-        self.y -= 5
+        self.y -= step*2
 
     def isInScreen(self):
         if self.y < 0 or self.x < 0:
@@ -51,14 +60,29 @@ class Bullet(object):
         else:
             return True
 
+
 class EnemyPlane(object):
     def __init__(self):
         self.x = 0
         self.y = 0
+        # 存储飞机的移动方向
+        self.direction = "right"
         self.image = pygame.image.load("./feiji/enemy-1.gif").convert()
 
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
+
+    def move(self):
+        if self.x >= 320 - 50:
+            self.direction = "left"
+        elif self.x <= 0:
+            self.direction = "right"
+
+        if self.direction == "left":
+            self.x -= step
+        else:
+            self.x += step
+
 
 def key_process(hero):
     # 判断是否是点击了退出按钮
@@ -86,6 +110,7 @@ def key_process(hero):
                 print('space')
                 hero.add_bullet()
 
+
 if __name__ == "__main__":
     # 创建一个窗口，用来显示内容
     screen = pygame.display.set_mode((320, 480), 0, 32)
@@ -107,21 +132,14 @@ if __name__ == "__main__":
         hero.display(screen)
 
         enemy.display(screen)
-
-        # 存储最终要显示的子弹
-        finalBullets = []
-
-        # 判断子弹是否出界
-        for bullet in hero.bullets:
-            if bullet.isInScreen():
-                finalBullets.append(bullet)
+        enemy.move()
 
         # 显示子弹
-        for bullet in finalBullets:
+        for bullet in hero.bullets:
             bullet.display(screen)
             bullet.move()
 
         key_process(hero)
-        
+
         pygame.display.update()
         time.sleep(0.1)
