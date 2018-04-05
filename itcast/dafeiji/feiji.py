@@ -7,11 +7,17 @@ from pygame.locals import *
 step = 5
 
 
-class HeroPlane(object):
-    def __init__(self):
-        self.x = 100
-        self.y = 350
-        self.image = pygame.image.load("./feiji/hero.gif").convert()
+class Base(object):
+    def __init__(self, x, y, imageName):
+        self.x = x
+        self.y = y
+        self.imageName = imageName
+        self.image = pygame.image.load(imageName).convert()
+
+
+class Plane(Base):
+    def __init__(self, x, y, imageName):
+        super().__init__(x, y, imageName)
 
         # 用来存储飞机发射的所有子弹
         self.bullets = []
@@ -31,6 +37,15 @@ class HeroPlane(object):
             bullet.display(screen)
             bullet.move()
 
+    def add_bullet(self, imageName, direction):
+        bullet = Bullet(self.x+43.5, self.y+20, imageName, direction)
+        self.bullets.append(bullet)
+
+
+class HeroPlane(Plane):
+    def __init__(self):
+        super().__init__(100, 350, "./feiji/hero.gif")
+
     def move_left(self):
         self.x -= step
 
@@ -44,17 +59,13 @@ class HeroPlane(object):
         self.y += step
 
     def add_bullet(self):
-        bullet = Bullet(self.x+43.5, self.y+20, "./feiji/bullet-3.gif", "up")
-        self.bullets.append(bullet)
+        super().add_bullet("./feiji/bullet-3.gif", "up")
 
 
-class Bullet(object):
+class Bullet(Base):
     def __init__(self, x, y, imageName, direction):
-        self.x = x
-        self.y = y
+        super().__init__(x, y, imageName)
         self.direction = direction
-        self.imageName = imageName
-        self.image = pygame.image.load(imageName).convert()
 
     def display(self, screen):
         screen.blit(self.image, (self.x, self.y))
@@ -72,31 +83,11 @@ class Bullet(object):
             return True
 
 
-class EnemyPlane(object):
+class EnemyPlane(Plane):
     def __init__(self):
-        self.x = 0
-        self.y = 0
+        super().__init__(0, 0, "./feiji/enemy-1.gif")
         # 存储飞机的移动方向
         self.direction = "right"
-        self.image = pygame.image.load("./feiji/enemy-1.gif").convert()
-
-        # 用来存储飞机发射的所有子弹
-        self.bullets = []
-
-    def display(self, screen):
-        screen.blit(self.image, (self.x, self.y))
-        # 存储最终要显示的子弹
-        finalBullets = []
-        # 判断子弹是否越界，越界的进行剔除
-        for bullet in self.bullets:
-            if bullet.isInScreen():
-                finalBullets.append(bullet)
-        self.bullets = finalBullets
-
-        # 显示子弹
-        for bullet in self.bullets:
-            bullet.display(screen)
-            bullet.move()
 
     def move(self):
         if self.x >= 320 - 50:
@@ -111,10 +102,8 @@ class EnemyPlane(object):
 
     def add_bullet(self):
         num = random.randint(1, 100)
-        if num == 88:
-            bullet = Bullet(self.x+10, self.y+10,
-                            "./feiji/bullet-1.gif", "down")
-            self.bullets.append(bullet)
+        if num == 88 or num == 8:
+            super().add_bullet("./feiji/bullet-1.gif", "down")
 
 
 def key_process(hero):
