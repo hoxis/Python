@@ -23,7 +23,7 @@ args = parser.parse_args()
 DAY = args.day
 
 url = "https://api.zsxq.com/v1.10/groups/2421112121/topics"
-authorization = "851754EE-18AE-F296-4FA7-D55ADCA10435"
+authorization = "xxxxxx-18AE-F296-4FA7-D55ADCA10435"
 headers = {
     'authorization': authorization,
     'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36",
@@ -55,6 +55,11 @@ def get_hour_data(source_time):
     querystring = {"count": "20", "end_time": end_time, "begin_time": begin_time}
     response = requests.request("GET", url, headers=headers, params=querystring)
     result = json.loads(response.text)
+    # 获取异常时直接退出
+    # 异常时会返回一个 code
+    if 'code' in result and result['code'] != 200:
+        print('Get data failed. Please check the parameters')
+        sys.exit(1)
     return result
 
 def parse_data(result):
