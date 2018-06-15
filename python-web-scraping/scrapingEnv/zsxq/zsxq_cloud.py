@@ -3,21 +3,24 @@
 import requests
 import json
 import jsonpath
-import time
 import datetime
 import argparse
 import jieba
 import re
+import os
+import sys
+import numpy
+from PIL import Image
 from wordcloud import WordCloud
 
 
 # 命令行输入参数处理
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--time', type=str, help="input the day time, like 2018-06-14", default=(datetime.datetime.now()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'))   # 哪一天的数据
+parser.add_argument('-d', '--day', type=str, help="input the day time, like 2018-06-14", default=(datetime.datetime.now()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'))   # 哪一天的数据
 
 # 获取参数
 args = parser.parse_args()
-DAY = args.time
+DAY = args.day
 
 url = "https://api.zsxq.com/v1.10/groups/2421112121/topics"
 authorization = "851754EE-18AE-F296-4FA7-D55ADCA10435"
@@ -40,6 +43,11 @@ headers = {
 # 获取某一个小时内的数据
 # 传入时间格式为：2018-18-29 20
 def get_hour_data(source_time):
+    result = ""
+    
+    # 若传入的时间超出当前时间，则直接返回空值
+    if source_time > datetime.datetime.now():
+        return result
     # 时间格式化
     end_time = source_time.strftime('%Y-%m-%dT%H') + ":00:00.000+0800"
     temp_time = source_time - datetime.timedelta(hours=1)
@@ -59,47 +67,44 @@ def parse_data(result):
             text += t
     return text
 
+# 删除其中的标签内容
 def filter_data(text):
-    # 删除其中的标签内容
     reg = re.compile('<[^>]*>')
-    content = reg.sub('',text)
+    content = reg.sub(u'',text)
     return content
 
 # 获取某一天的数据
 def get_day_data(one_time):
     pass
 
-
 if __name__ == "__main__":
-    day_data = {}
-
-    # with open('result.txt', 'w+') as f:
-    #     for i in range(24):
-    #         time = DAY + " " + str(i)
-    #         temp_time = datetime.datetime.strptime(time, '%Y-%m-%d %H')
-    #         result = get_hour_data(temp_time)
-
-    #         result = filter_data(parse_data(result).encode('utf-8'))
-
-    #         f.write(result)
-    #         # day_data[temp_time.strftime('%Y-%m-%d %H')] = parse_data(result)
+    with open('result.txt', 'w+') as f:
+        for i in range(24):
+            time = DAY + " " + str(i)
+            temp_time = datetime.datetime.strptime(time, '%Y-%m-%d %H')
+            result = get_hour_data(temp_time)
+            if result:
+                data = parse_data(result)
+                result = filter_data(data)
+                f.write(result)
     
-    # 结巴分词
-    f = open(u'result.txt','r').read()
-    wordlist = jieba.cut(f, cut_all=True)
-    wl = " ".join(wordlist)
-    print(wl)
+    # 若没有采集到数据则直接退出
+    if os.path.getsize('result.txt'):
+        # jieba 分词
+        f = open('result.txt').read()
+        wordlist = jieba.cut(f, cut_all=True)
+        wl_space_split = " ".join(wordlist)
 
-    wordcloud = WordCloud(background_color="white",width=1000, height=860, margin=2).generate(f)
-    import matplotlib.pyplot as plt
-    plt.imshow(wordcloud)
-    plt.axis("off")
-    plt.show()
+        coloring = numpy.array(Image.open("python.png"))
 
-    wordcloud.to_file('test.png')
-    
-    # 对用户发表内推词云分析
-    # for key, value in day_data.items():
-    #     if len(value) != 0:
-    #         print(value["text"])
-    # # print(list(day_data.values))
+        # width,height,margin 可以设置图片属性
+        # generate 可以对全部文本进行自动分词，但是他对中文支持不好，所以这里我们使用 jieba 先进行了分词
+        # 通过 font_path 参数来设置字体集
+        # 通过 mask 参数 来设置词云形状
+        my_wordcloud = WordCloud(background_color="white", max_words=2000, mask=coloring, 
+                        font_path='fangsong_GB2312.ttf', max_font_size=50, random_state=42).generate(wl_space_split)
+        my_wordcloud.to_file('test.png')
+    else:
+        print('get nothing, please check the parameters')
+    # 删除临时文本文件
+    os.unlink('result.txt')
