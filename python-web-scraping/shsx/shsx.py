@@ -1,6 +1,6 @@
 #encoding=utf-8
 import requests, json, sys
-
+from twilio.rest import Client
 
 def login(Phone, PassWord):
     url = "https://wechatx.34580.com/sz/Sign/SignInV2"
@@ -36,9 +36,22 @@ def signin(customerguid, accesstoken):
     is_error = data['Error']
     if is_error:
         print(data['Message'])
+        send_sms(data['Message'])
     else:
         print("签到成功，获取到 {} 个积分".format(data['Data']['GetPoints']))
+        send_sms("签到成功，获取到 {} 个积分".format(data['Data']['GetPoints']))
 
+def send_sms(text):
+    account_sid = 'your_sid'
+    auth_token = 'your_auth_token'
+    client = Client(account_sid, auth_token)
+
+    message = client.messages.create(
+                                from_='your_from_num',
+                                body=text,
+                                to='your_to_num'
+                            )
+    print(message.sid)
 
 if __name__ == "__main__":
     Phone = input('请输入账号：')
