@@ -23,7 +23,7 @@ args = parser.parse_args()
 DAY = args.day
 
 url = "https://api.zsxq.com/v1.10/groups/2421112121/topics"
-authorization = "xxxxxx-18AE-F296-4FA7-D55ADCA10435"
+authorization = "851754EE-18AE-F296-4FA7-D55ADCA10435"
 headers = {
     'authorization': authorization,
     'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36",
