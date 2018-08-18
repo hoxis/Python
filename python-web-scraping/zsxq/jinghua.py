@@ -8,18 +8,23 @@ import pdfkit
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from urllib.parse import unquote
+import sys
 
-html_template = """
+result_template = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
 </head>
+{}
+</html>
+"""
+
+html_template = """
 <body>
 <h1>{title}</h1>
 <p>{text}</p>
 </body>
-</html>
 """
 htmls = []
 num = 0
@@ -94,8 +99,10 @@ def get_data(url):
     next_page = rsp.json().get('resp_data').get('topics')
     if next_page:
         create_time = next_page[-1].get('create_time')
+        print(create_time)
         end_time = create_time[:20]+str(int(create_time[20:23])-1)+create_time[23:]
         end_time = quote(end_time)
+        print(end_time)
         if len(end_time) == 33:
             end_time = end_time[:24] + '0' + end_time[24:]
         next_url = start_url + '&end_time=' + end_time
@@ -105,12 +112,7 @@ def get_data(url):
     return htmls
 
 def make_pdf(htmls):
-    html_files = []
-    for index, html in enumerate(htmls):
-        file = str(index) + ".html"
-        html_files.append(file)
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(html)
+    result = result_template.format("".join(htmls))
 
     options = {
         "user-style-sheet": "jinghua.css",
@@ -127,12 +129,10 @@ def make_pdf(htmls):
         "outline-depth": 10,
     }
     try:
-        pdfkit.from_file(html_files, "电子书.pdf", options=options)
+        pdfkit.from_string(result, "电子书.pdf", options=options)
     except Exception as e:
         print(e)
-
-    for file in html_files:
-        os.remove(file)
+        sys.exit(1)
 
     print("已制作电子书在当前目录！")
     
