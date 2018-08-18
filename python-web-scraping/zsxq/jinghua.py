@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 from urllib.parse import unquote
 import sys
+import datetime
 
 result_template = """
 <!DOCTYPE html>
@@ -99,12 +100,16 @@ def get_data(url):
     next_page = rsp.json().get('resp_data').get('topics')
     if next_page:
         create_time = next_page[-1].get('create_time')
-        print(create_time)
-        end_time = create_time[:20]+str(int(create_time[20:23])-1)+create_time[23:]
+
+        # int -1 后需要进行补 0 处理，test_str.zfill(3)
+        end_time = create_time[:20]+str(int(create_time[20:23])-1).zfill(3)+create_time[23:]
+        # 时间出现整点时需要特殊处理，否则会出现 -1
+        if create_time[20:23] == '000':
+            temp_time = datetime.datetime.strptime(create_time, "%Y-%m-%dT%H:%M:%S.%f+0800")
+            temp_time += datetime.timedelta(seconds=-1)
+            end_time = temp_time.strftime("%Y-%m-%dT%H:%M:%S") + '.999+0800'
         end_time = quote(end_time)
-        print(end_time)
-        if len(end_time) == 33:
-            end_time = end_time[:24] + '0' + end_time[24:]
+        
         next_url = start_url + '&end_time=' + end_time
         print(next_url)
         get_data(next_url)
@@ -137,5 +142,5 @@ def make_pdf(htmls):
     print("已制作电子书在当前目录！")
     
 if __name__ == '__main__':
-    start_url = 'https://api.zsxq.com/v1.10/groups/8424258282/topics?scope=digests&count=20'
+    start_url = 'https://api.zsxq.com/v1.10/groups/454584445828/topics?scope=digests&count=20'
     make_pdf(get_data(start_url))
