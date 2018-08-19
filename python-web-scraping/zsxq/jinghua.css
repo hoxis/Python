@@ -1,16 +1,33 @@
-h1 {font-size:40px; color:red; text-align:center;}
-p {font-size:20px;}
-img{
-	max-width:100%;
-	margin:20px auto;
-	height:auto;
-	border:0;
-	outline:0
-	-webkit-box-shadow: 1px 4px 16px 8px #5CA2BE;
-    -moz-box-shadow: 1px 4px 16px 8px #5CA2BE;
-    box-shadow: 1px 4px 16px 8px #5CA2BE;
-    /*set the images aligned*/
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-	}
+h1 {
+	font-size: 40px;
+	color: red;
+	text-align: center;
+	font-weight:bold;
+	font-family: 'SimHei'
+}
+
+p {
+	font-size: 20px;
+	font-family:"微软雅黑";
+}
+
+.comments {
+	color: rgb(62, 156, 199);
+	border:2px solid; /* 边框 */
+	border-radius:10px;
+	box-shadow: 10px 10px 5px #888888;
+}
+
+img {
+	max-width: 80%;
+	margin: 20px auto;
+	height: auto;
+	border: 0;
+	outline: 0 -webkit-box-shadow: 1px 4px 16px 8px #5CA2BE;
+	-moz-box-shadow: 1px 4px 16px 8px #5CA2BE;
+	box-shadow: 1px 4px 16px 8px #5CA2BE;
+	/*set the images aligned*/
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}

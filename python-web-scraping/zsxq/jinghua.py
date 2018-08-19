@@ -25,10 +25,36 @@ html_template = """
 <body>
 <h1>{title}</h1>
 <p>{text}</p>
+<p>评论：</p>
+
+<div class='comments'>
+{comments}
+</div>
 </body>
 """
 htmls = []
 num = 0
+
+# 对文本进行 URL 解码，要不后面解析处理也无法点击
+def handle_link(text):
+    # 星球中用 <e> 表示超链接
+    # 这里我们进行转换
+    soup = BeautifulSoup(text,"html.parser")
+    links = soup.find_all('e', attrs={'type':'web'})
+    if len(links):
+        for link in links:
+            title = link.attrs['title']
+            href = link.attrs['href']
+            s = '<a href={}>{} </a>'.format(href,title)
+            text += s
+    
+    # 清理原文中的 <e> 标签
+    # 这里不清理也没问题，HTML 解析不了，页面也不会显示
+    # 但是，强迫症。
+    text = re.sub(r'<e[^>]*>', '', text).strip()
+    return text
+
+
 def get_data(url):
 
     global htmls, num
@@ -51,28 +77,19 @@ def get_data(url):
     with open('jinghua.json', encoding='utf-8') as f:
         for topic in json.loads(f.read()).get('resp_data').get('topics'):
             content = topic.get('question', topic.get('talk', topic.get('task', topic.get('solution'))))
-            
-            # 对文本进行 URL 解码，要不后面解析处理也无法点击
-            text = unquote(content.get('text', ''))
 
-            # 星球中用 <e> 表示超链接
-            # 这里我们进行转换
-            soup = BeautifulSoup(text,"html.parser")
-            links = soup.find_all('e', attrs={'type':'web'})
-            if len(links):
-                for link in links:
-                    title = link.attrs['title']
-                    href = link.attrs['href']
-                    s = '<a href={}>{} </a>'.format(href,title)
-                    text += s
+            text = handle_link(unquote(content.get('text', '')))
             
-            # 清理原文中的 <e> 标签
-            # 这里不清理也没问题，HTML 解析不了，页面也不会显示
-            # 但是，强迫症。
-            text = re.sub(r'<e[^>]*>', '', text).strip()
+            # 评论解析
+            comments = topic.get('show_comments')
+            comments_str = ''
+            if comments:
+                for comment in comments:
+                    comments_str += comment.get('owner').get('name') + " : " + handle_link(unquote(comment.get('text')))
+                    comments_str += '<br><br>'
 
             # 截取正文内容作为标题
-            title = str(num) + text[:9]
+            title = str(num) + ". " + text[:9]
             num += 1
 
             if content.get('images'):
@@ -82,9 +99,9 @@ def get_data(url):
                     img_tag = soup.new_tag('img', src=url)
                     soup.body.append(img_tag)
                     html_img = str(soup)
-                    html = html_img.format(title=title, text=text)
+                    html = html_img.format(title=title, text=text, comments=comments_str)
             else:
-                html = html_template.format(title=title, text=text)
+                html = html_template.format(title=title, text=text,comments=comments_str)
 
             if topic.get('question'):
                 answer = topic.get('answer').get('text', "")
@@ -93,7 +110,7 @@ def get_data(url):
                 answer_tag.string = answer
                 soup.body.append(answer_tag)
                 html_answer = str(soup)
-                html = html_answer.format(title=title, text=text)
+                html = html_answer.format(title=title, text=text, comments=comments_str)
 
             htmls.append(html)
 
