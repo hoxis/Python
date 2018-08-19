@@ -7,11 +7,12 @@ h1 {
 }
 
 p {
-	font-size: 20px;
+	font-size: 25px;
 	font-family:"微软雅黑";
 }
 
 .comments {
+	font-size: 20px;
 	color: rgb(62, 156, 199);
 	border:2px solid; /* 边框 */
 	border-radius:10px;

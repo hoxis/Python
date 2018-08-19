@@ -45,7 +45,7 @@ def handle_link(text):
         for link in links:
             title = link.attrs['title']
             href = link.attrs['href']
-            s = '<a href={}>{} </a>'.format(href,title)
+            s = '<a href={}> 链接：{} </a>'.format(href,title)
             text += s
     
     # 清理原文中的 <e> 标签
@@ -78,14 +78,14 @@ def get_data(url):
         for topic in json.loads(f.read()).get('resp_data').get('topics'):
             content = topic.get('question', topic.get('talk', topic.get('task', topic.get('solution'))))
 
-            text = handle_link(unquote(content.get('text', '')))
+            text = handle_link(unquote(content.get('text', '').replace("\n", "<br>")))
             
             # 评论解析
             comments = topic.get('show_comments')
             comments_str = ''
             if comments:
                 for comment in comments:
-                    comments_str += comment.get('owner').get('name') + " : " + handle_link(unquote(comment.get('text')))
+                    comments_str += comment.get('owner').get('name') + " : " + handle_link(unquote(comment.get('text').replace("\n", "<br>")))
                     comments_str += '<br><br>'
 
             # 截取正文内容作为标题
