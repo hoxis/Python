@@ -36,10 +36,20 @@ def signin(customerguid, accesstoken):
     is_error = data['Error']
     if is_error:
         print(data['Message'])
-        send_sms(data['Message'])
+        send_wechat(data['Message'])
     else:
         print("签到成功，获取到 {} 个积分".format(data['Data']['GetPoints']))
-        send_sms("签到成功，获取到 {} 个积分".format(data['Data']['GetPoints']))
+        send_wechat("签到成功，获取到 {} 个积分".format(data['Data']['GetPoints']))
+
+def send_wechat1(text):
+    url = "https://sc.ftqq.com/xxxx.send?text={}&desp={}".format('食行生鲜签到提醒',text)
+    resp = requests.get(url)
+    print(resp.status_code)
+
+def send_wechat(text):
+    url = "https://pushbear.ftqq.com/sub?sendkey=5250-xxxx&text={}&desp={}".format('食行生鲜签到提醒',text)
+    resp = requests.get(url)
+    print(resp.text)
 
 def send_sms(text):
     account_sid = 'your_sid'
