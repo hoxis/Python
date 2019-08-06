@@ -1,0 +1,11 @@
+echarts-china-provinces-pypkg
+echarts-china-cities-pypkg
+echarts-china-counties-pypkg
+echarts-china-misc-pypkg 
+echarts-countries-pypkg
+echarts-united-kingdom-pypkg
+pyecharts_snapshot
+pandas
+echarts-themes-pypkg
+pyecharts==0.5.11
+tencentcloud-sdk-python
